@@ -144,7 +144,7 @@ namespace xtd_fluid_simulation {
 		// Get the color of a particle at a specific location in fluid
 		xtd::drawing::color get_color_at(const int i, const int j) noexcept {
 			// Get Density 0 -> 255 alpha (background color)
-			float& density = m_density[IX(i, j)];
+			float density = m_density[IX(i, j)];
 			// So that fluid color will not turn into black when adding too much density
 			density = std::min(std::max(density, 0.0f), 255.0f); //std::clamp(density, 0.0f, 255.0f);
 			// Construct color based on density alpha

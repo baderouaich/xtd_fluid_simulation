@@ -39,7 +39,7 @@ main_form::main_form() :
   m_bcp_label.parent(m_vlayout);
   m_bcp_label.text("Background Color:");
   m_cp_background_color.parent(m_vlayout);
-  m_cp_background_color.width(170);
+  m_cp_background_color.width(180);
   m_cp_background_color.color(m_animation->back_color());
   m_cp_background_color.color_picker_changed += [&](object& sender, const color_picker_event_args& e){
     m_animation->back_color(e.color());
@@ -48,7 +48,7 @@ main_form::main_form() :
   m_cp_label.parent(m_vlayout);
   m_cp_label.text("Fluid Color:");
   m_cp_fluid_color.parent(m_vlayout);
-  m_cp_fluid_color.width(170);
+  m_cp_fluid_color.width(180);
   m_cp_fluid_color.color(m_fluid->get_color());
   m_cp_fluid_color.color_picker_changed += [&](object& sender, const color_picker_event_args& e) {
     m_fluid->set_color(e.color());
@@ -58,7 +58,7 @@ main_form::main_form() :
   m_tb_label.parent(m_vlayout);
   m_tb_label.text("Motion Speed:");
   m_tb_speed.parent(m_vlayout);
-  m_tb_speed.width(170);
+  m_tb_speed.width(180);
   m_tb_speed.value(m_fluid->get_speed());
   m_tb_speed.minimum(m_fluid->get_min_speed());
   m_tb_speed.maximum(m_fluid->get_max_speed());
@@ -69,7 +69,7 @@ main_form::main_form() :
   m_vlx_label.parent(m_vlayout);
   m_vlx_label.text("Velocity X:");
   m_tb_velocity_x.parent(m_vlayout);
-  m_tb_velocity_x.width(170);
+  m_tb_velocity_x.width(180);
   m_tb_velocity_x.minimum(-100);
   m_tb_velocity_x.maximum(100);
   m_tb_velocity_x.value(0);
@@ -79,7 +79,7 @@ main_form::main_form() :
 
   m_vly_label.parent(m_vlayout);
   m_vly_label.text("Velocity Y:");
-  m_tb_velocity_y.width(170);
+  m_tb_velocity_y.width(180);
   m_tb_velocity_y.parent(m_vlayout);
   m_tb_velocity_y.minimum(-100);
   m_tb_velocity_y.maximum(100);
@@ -90,14 +90,35 @@ main_form::main_form() :
   
   m_density_label.parent(m_vlayout);
   m_density_label.text("Density (dye amount):");
-  m_density_label.width(170);
+  m_density_label.width(180);
   m_tb_density.parent(m_vlayout);
-  m_tb_density.width(170);
-  m_tb_density.value(static_cast<int>(m_density));
-  m_tb_density.minimum(1000);
-  m_tb_density.maximum(100'000);
-  m_tb_density.value_changed += [&] {
-    m_density = static_cast<float>(m_tb_density.value());
+  m_tb_density.width(180);
+  m_tb_density.value(1000);
+  m_tb_density.minimum(500);
+  m_tb_density.maximum(3000);
+
+
+  m_auto_density_label.parent(m_vlayout);
+  m_auto_density_label.text("Automatic Density:");
+  m_auto_density_label.width(180);
+  m_sb_auto_density.parent(m_vlayout);
+  m_sb_auto_density.auto_check(true);
+  m_sb_auto_density.checked(false);
+
+
+  static splitter sp;
+  sp.parent(m_vlayout);
+  m_btn_reset.parent(m_vlayout);
+  m_btn_reset.width(180);
+  m_btn_reset.text("Reset to defaults");
+  m_btn_reset.click += [&] {
+    m_cp_background_color.color(color::black);
+    m_cp_fluid_color.color(color::cyan);
+    m_tb_speed.value(7);
+    m_tb_velocity_x.value(0);
+    m_tb_velocity_y.value(0);
+    m_tb_density.value(1000);
+    m_sb_auto_density.checked(false);
   };
 
 }
@@ -109,7 +130,7 @@ void main_form::on_animation_update(object& sender, const animation_updated_even
   if (m_animation->mouse_buttons() == mouse_buttons::left)
   {
     // Add some of dye in held location
-    m_fluid->AddDensity(static_cast<int>(m_mouse_position.x() / Fluid::SCALE), static_cast<int>(m_mouse_position.y() / Fluid::SCALE), m_density);
+    m_fluid->AddDensity(static_cast<int>(m_mouse_position.x() / Fluid::SCALE), static_cast<int>(m_mouse_position.y() / Fluid::SCALE), static_cast<float>(m_tb_density.value()));
     // note that the position bellow is from m_animation not the main form; equiv: m_animation->mouse_position()
     // Apply Mouse Drag Velocity to simulate fluid movement
     const float amount_x = static_cast<float>(m_mouse_position.x()) - m_previous_mouse_position.x();
@@ -129,6 +150,14 @@ void main_form::on_animation_update(object& sender, const animation_updated_even
         m_fluid->AddVelocity(x, y, m_velocity.x(), m_velocity.y());
       }
     }
+
+  // Add automatic density at center if switch_button is on
+  if (m_sb_auto_density.checked()) {
+    int center_x = (m_animation->width() / 2) / Fluid::SCALE;
+    int center_y = (m_animation->height() / 2) / Fluid::SCALE;
+    m_fluid->AddDensity(center_x, center_y, static_cast<float>(m_tb_density.value()));
+    m_fluid->AddVelocity(center_x, center_y, random(-3.0f, 3.0f), random(-2.0f, 2.0f));
+  }
 
   // Update Fluid
   m_fluid->Update(delta_time);

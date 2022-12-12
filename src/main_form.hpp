@@ -47,7 +47,12 @@ namespace xtd_fluid_simulation {
 
     xtd::forms::label m_density_label;
     xtd::forms::track_bar m_tb_density;
-    float m_density = 40'000.f;
+
+    xtd::forms::label m_auto_density_label;
+    xtd::forms::switch_button m_sb_auto_density;
+
+    xtd::forms::button m_btn_reset;
+
 
     template<typename T>
     inline static T random(const T& min, const T& max) noexcept {
