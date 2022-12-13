@@ -11,7 +11,7 @@ add_sources(
 )
 target_type(GUI_APPLICATION)
 target_compile_options(${PROJECT_NAME} PRIVATE
-  $<$<CXX_COMPILER_ID:MSVC>:/Ox /fp:fast /Oi>
+  $<$<CXX_COMPILER_ID:MSVC>:/Ox /fp:fast /Oi /Ot>
   $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Ofast -march=native>
 )
 

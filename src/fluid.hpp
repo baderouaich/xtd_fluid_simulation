@@ -25,7 +25,7 @@ namespace xtd_fluid_simulation {
 		*	Diffuse is really simple; it just precalculates a value and passes everything off to LinearSolve.
 		*	So that means, while I know what it does, I don't really know how,
 		*	since all the work is in that mysterious function.
-		* 
+		*
 		* @info: Put a drop of soy sauce in some water, and you'll notice that it doesn't stay still, but it spreads out.
 		*	This happens even if the water and sauce are both perfectly still. This is called diffusion.
 		*	We use diffusion both in the obvious case of making the dye spread out, and also in the less obvious case of making the velocities of the fluid spread out.
@@ -40,7 +40,7 @@ namespace xtd_fluid_simulation {
 		*	but the slower things run. In the step function above,
 		*	four iterations are used. After each iteration, it resets the
 		*	boundaries so the calculations don't explode.
-		* 
+		*
 		* @info: I honestly don't know exactly what this function does or how it works. What I do know is that it's used for both diffuse and project.
 		* It's solving a linear differential equation of some sort, although how and what is not entirely clear to me.
 		*/
@@ -71,9 +71,9 @@ namespace xtd_fluid_simulation {
 		*	That is the answer to the mysterious b. It tells the function which array it's dealing with, and so whether each boundary cell should be set equal or opposite its neighbor's value.
 		*
 		*	This function also sets corners. This is done very simply, by setting each corner cell equal to the average of its three neighbors.
-		* 
+		*
 		* @info: This is short for "set bounds", and it's a way to keep fluid from leaking out of your box.
-		* Not that it could really leak, since it's just a simulation in memory, but not having walls really screws up the simulation code. 
+		* Not that it could really leak, since it's just a simulation in memory, but not having walls really screws up the simulation code.
 		* Walls are added by treating the outer layer of cells as the wall. Basically, every velocity in the layer next to this outer layer is mirrored.
 		* So when you have some velocity towards the wall in the next-to-outer layer, the wall gets a velocity that perfectly counters it.
 		*/
@@ -83,7 +83,7 @@ namespace xtd_fluid_simulation {
 		*	This function is also somewhat mysterious as to exactly how it works,
 		*	but it does some more running through the dataand setting values,
 		*	with some calls to LinearSolve thrown in for fun.
-		* 
+		*
 		* @info: Remember when I said that we're only simulating incompressible fluids? This means that the amount of fluid in each box has to stay constant.
 		* That means that the amount of fluid going in has to be exactly equal to the amount of fluid going out.
 		* The other operations tend to screw things up so that you get some boxes with a net outflow, and some with a net inflow.
@@ -98,14 +98,14 @@ namespace xtd_fluid_simulation {
 		*	and sees where it lands.It then takes a weighted average
 		*	of the cells around the spot where it lands, then applies
 		*	that value to the current cell.
-		* 
+		*
 		* @info: Every cell has a set of velocities, and these velocities make things move. This is called advection.
 		* As with diffusion, advection applies both to the dye and to the velocities themselves.
 		**/
 		void Advect(int b, float* d, float* d0, float* velocX, float* velocY, float dt) noexcept;
 
 
-	
+
 		//#include <intrin.h>
 		//static inline float fast_min(float a, float b) noexcept
 		//{
@@ -134,9 +134,9 @@ namespace xtd_fluid_simulation {
 		*/
 		inline static constexpr int IX(int x, int y) noexcept
 		{
-			// i was using std::clamp, although to optimize things up, minmax clamp is 3.3 times faster than std::clamp -> https://quick-bench.com/q/x7RbIo-YFpEKkvFbbQGqsLREKQQ
-			x = std::min(std::max(x, 0), N-1);
-			y = std::min(std::max(y, 0), N-1);
+			// i was using std::clamp, although to optimize things up, minmax clamp is 4.1 times faster than std::clamp -> https://quick-bench.com/q/x7RbIo-YFpEKkvFbbQGqsLREKQQ
+			x = std::min(std::max(x, 0), N - 1);
+			y = std::min(std::max(y, 0), N - 1);
 			return x + (y * N);
 		}
 
@@ -151,29 +151,29 @@ namespace xtd_fluid_simulation {
 			return xtd::drawing::color::from_argb(static_cast<std::uint8_t>(density), m_fluid_color.r(), m_fluid_color.g(), m_fluid_color.b());
 		}
 
-		const xtd::drawing::color& get_color() const noexcept { return m_fluid_color; }	
-		void set_color(xtd::drawing::color color) noexcept {
+		const xtd::drawing::color& get_color() const noexcept { return m_fluid_color; }
+		void set_color(const xtd::drawing::color& color) noexcept {
 			m_fluid_color = color;
 		}
 
 		// Motion speed attr
-		void set_speed(int speed) noexcept { m_speed = speed; }
+		void set_speed(const int speed) noexcept { m_speed = speed; }
 		constexpr int get_speed() const noexcept { return m_speed; }
 		constexpr int get_max_speed() const noexcept { return 20; }
 		constexpr int get_min_speed() const noexcept { return 0; }
 
 	public:
-		inline static constexpr const int N = 80;    // Number of particles
-		inline static constexpr const int SCALE = 8;  // Size of particles (w,h) (the smaller the rect, the more realistic simulation, the more slower performance..)
+		inline static constexpr const int N = 120;    // Number of particles
+		inline static constexpr const int SCALE = 5;  // Size of particles (w,h) (the smaller the rect, the more realistic simulation, the more slower performance..)
 
 
 	private: // No stack over flow please OS!
 		std::array<float, N * N> m_fluid_particles; // Fluid particles
 		std::array<float, N * N> m_density; // Density (aka amount of dye)
-
+		
 		std::array<float, N * N> m_velocity_x; // velocity X for each fluid particle
 		std::array<float, N * N> m_velocity_y; // velocity Y for each fluid particle
-
+		
 		std::array<float, N * N> m_prev_velocity_x; // previous velocity X
 		std::array<float, N * N> m_prev_velocity_y; // previous velocity Y
 
@@ -181,7 +181,7 @@ namespace xtd_fluid_simulation {
 		float m_motion_speed = 0.2f; // Motion speed of fluid (speed * delta_time)
 		float m_vescosity = 0.0000001f; // Thickness of fluid
 		float m_diffusion = 0.000001f; // Diffusion of fluid (the more value, the longer the fluid will keep difussing around)
-		int m_iterations = 16; // Number of iterations (the more iterations, the more realistic fluid behavior we get. although frame rate reduces with more iterations...)
+		int m_iterations = 32; // Number of iterations (the more iterations, the more realistic fluid behavior we get. although frame rate reduces with more iterations...)
 		
 		xtd::drawing::color m_fluid_color = xtd::drawing::color::cyan;
 	};

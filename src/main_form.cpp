@@ -30,7 +30,7 @@ main_form::main_form() :
   m_animation->updated += animation_updated_event_handler(*this, &main_form::on_animation_update);
   m_animation->paint += paint_event_handler(*this, &main_form::on_animation_draw);
   m_animation->mouse_move += mouse_event_handler(*this, &main_form::on_animation_mouse_move);
-
+  
   m_vlayout.parent(*this);
   m_vlayout.dock(dock_style::right);
   m_vlayout.width(200);
@@ -93,9 +93,9 @@ main_form::main_form() :
   m_density_label.width(180);
   m_tb_density.parent(m_vlayout);
   m_tb_density.width(180);
-  m_tb_density.value(1000);
   m_tb_density.minimum(500);
   m_tb_density.maximum(3000);
+  m_tb_density.value(1000);
 
 
   m_auto_density_label.parent(m_vlayout);
@@ -103,11 +103,9 @@ main_form::main_form() :
   m_auto_density_label.width(180);
   m_sb_auto_density.parent(m_vlayout);
   m_sb_auto_density.auto_check(true);
-  m_sb_auto_density.checked(false);
+  m_sb_auto_density.checked(true);
 
 
-  static splitter sp;
-  sp.parent(m_vlayout);
   m_btn_reset.parent(m_vlayout);
   m_btn_reset.width(180);
   m_btn_reset.text("Reset to defaults");
@@ -125,7 +123,7 @@ main_form::main_form() :
 
 void main_form::on_animation_update(object& sender, const animation_updated_event_args& e) {
   const float delta_time = e.elapsed_milliseconds() / 1000.0f;
-  
+
   // If left mouse button is pressed (over the animation), add some of dye at that location
   if (m_animation->mouse_buttons() == mouse_buttons::left)
   {
@@ -147,16 +145,16 @@ void main_form::on_animation_update(object& sender, const animation_updated_even
       {
         const int x = i * Fluid::SCALE;
         const int y = j * Fluid::SCALE;
-        m_fluid->AddVelocity(x, y, m_velocity.x(), m_velocity.y());
+        m_fluid->AddVelocity(x, y, m_velocity.x() * delta_time , m_velocity.y() * delta_time);
       }
     }
 
   // Add automatic density at center if switch_button is on
   if (m_sb_auto_density.checked()) {
-    int center_x = (m_animation->width() / 2) / Fluid::SCALE;
-    int center_y = (m_animation->height() / 2) / Fluid::SCALE;
+    const int center_x = (m_animation->width() / 2) / Fluid::SCALE;
+    const int center_y = (m_animation->height() / 2) / Fluid::SCALE;
     m_fluid->AddDensity(center_x, center_y, static_cast<float>(m_tb_density.value()));
-    m_fluid->AddVelocity(center_x, center_y, random(-3.0f, 3.0f), random(-2.0f, 2.0f));
+    m_fluid->AddVelocity(center_x, center_y, random(-3.0f, 3.0f), random(-3.0f, 3.0f));
   }
 
   // Update Fluid
@@ -172,7 +170,7 @@ void main_form::on_animation_draw(object& sender, paint_event_args& e) {
   gfx.clear(m_animation->back_color());
 
   // Draw fluid particles (as small rectangles, with different alpha color)
-  static drawing::solid_brush particle_brush = drawing::solid_brush(m_fluid->get_color());
+  static drawing::solid_brush particle_brush(m_fluid->get_color());
   for (int j = 0; j < Fluid::N; ++j)
   {
     for (int i = 0; i < Fluid::N; ++i)

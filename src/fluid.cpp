@@ -52,7 +52,7 @@ void Fluid::AddVelocity(int x, int y, float amountX, float amountY) noexcept
 void Fluid::Diffuse(int b, float* x, float* x0, float diff, float dt) noexcept
 {
 	const float a = dt * diff * (N - 2) * (N - 2);
-	LinearSolve(b, x, x0, a, 1 + SCALE * a);
+	LinearSolve(b, x, x0, a, 1.0f + SCALE * a);
 }
 
 void Fluid::LinearSolve(int b, float* x, float* x0, float a, float c) noexcept
@@ -64,8 +64,9 @@ void Fluid::LinearSolve(int b, float* x, float* x0, float a, float c) noexcept
 		{
 			for (int i = 1; i < N - 1; i++)
 			{
-				x[IX(i, j)] =
-					(x0[IX(i, j)]
+				const int index = IX(i, j);
+				x[index] =
+					(x0[index]
 						+ a * (x[IX(i + 1, j)]
 							+ x[IX(i - 1, j)]
 							+ x[IX(i, j + 1)]
@@ -91,24 +92,24 @@ void Fluid::SetBoundary(int b, float* x) noexcept
 		x[IX(N - 1, j)] = b == 1 ? -x[IX(N - 2, j)] : x[IX(N - 2, j)];
 	}
 
-	x[IX(0, 0)] = 0.33f * (x[IX(1, 0)] + x[IX(0, 1)]);
-	x[IX(0, N - 1)] = 0.33f * (x[IX(1, N - 1)] + x[IX(0, N - 2)]);
-	x[IX(N - 1, 0)] = 0.33f * (x[IX(N - 2, 0)] + x[IX(N - 1, 1)]);
-	x[IX(N - 1, N - 1)] = 0.33f * (x[IX(N - 2, N - 1)] + x[IX(N - 1, N - 2)]);
-
+	x[IX(0, 0)] = 0.50f * (x[IX(1, 0)] + x[IX(0, 1)]);
+	x[IX(0, N - 1)] = 0.50f * (x[IX(1, N - 1)] + x[IX(0, N - 2)]);
+	x[IX(N - 1, 0)] = 0.50f * (x[IX(N - 2, 0)] + x[IX(N - 1, 1)]);
+	x[IX(N - 1, N - 1)] = 0.50f * (x[IX(N - 2, N - 1)] + x[IX(N - 1, N - 2)]);
 }
 
 void Fluid::Project(float* velocX, float* velocY, float* p, float* div) noexcept
 {
 	for (int j = 1; j < N - 1; j++) {
 		for (int i = 1; i < N - 1; i++) {
-			div[IX(i, j)] = -0.5f * (
+			const int index = IX(i, j);
+			div[index] = -0.5f * (
 				velocX[IX(i + 1, j)]
 				- velocX[IX(i - 1, j)]
 				+ velocY[IX(i, j + 1)]
 				- velocY[IX(i, j - 1)]
 				) / N;
-			p[IX(i, j)] = 0;
+			p[index] = 0;
 		}
 	}
 
@@ -118,9 +119,10 @@ void Fluid::Project(float* velocX, float* velocY, float* p, float* div) noexcept
 
 	for (int j = 1; j < N - 1; j++) {
 		for (int i = 1; i < N - 1; i++) {
-			velocX[IX(i, j)] -= 0.5f * (p[IX(i + 1, j)]
+			const int index = IX(i, j);
+			velocX[index] -= 0.5f * (p[IX(i + 1, j)]
 				- p[IX(i - 1, j)]) * N;
-			velocY[IX(i, j)] -= 0.5f * (p[IX(i, j + 1)]
+			velocY[index] -= 0.5f * (p[IX(i, j + 1)]
 				- p[IX(i, j - 1)]) * N;
 		}
 	}
@@ -171,10 +173,10 @@ void Fluid::Advect(int b, float* d, float* d0, float* velocX, float* velocY, flo
 			t0 = 1.0f - t1;
 
 
-			int i0i = static_cast<int>(i0);
-			int i1i = static_cast<int>(i1);
-			int j0i = static_cast<int>(j0);
-			int j1i = static_cast<int>(j1);
+			const int i0i = static_cast<int>(i0);
+			const int i1i = static_cast<int>(i1);
+			const int j0i = static_cast<int>(j0);
+			const int j1i = static_cast<int>(j1);
 
 			d[index] =
 				s0 * (t0 * d0[IX(i0i, j0i)] + t1 * d0[IX(i0i, j1i)]) +
